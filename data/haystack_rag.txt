@@ -1,0 +1,77 @@
+Retrieval-Augmented Generation (RAG) with Haystack
+====================================================
+
+RAG is a technique that improves LLM responses by first retrieving relevant documents
+from a knowledge base and injecting them as context into the prompt. Haystack makes
+it straightforward to build RAG pipelines.
+
+How RAG Works:
+    1. Index documents (chunking + embedding + storing)
+    2. At query time, embed the user question
+    3. Retrieve top-K similar documents from the store
+    4. Build a prompt that includes the documents + the question
+    5. Pass the prompt to an LLM to generate a grounded answer
+
+Step 1: Indexing Pipeline Example:
+    from haystack import Pipeline
+    from haystack.components.converters import TextFileToDocument
+    from haystack.components.preprocessors import DocumentSplitter
+    from haystack_integrations.components.embedders.ollama import OllamaDocumentEmbedder
+    from haystack.components.writers import DocumentWriter
+    from haystack.document_stores.in_memory import InMemoryDocumentStore
+
+    document_store = InMemoryDocumentStore()
+
+    indexing = Pipeline()
+    indexing.add_component("converter", TextFileToDocument())
+    indexing.add_component("splitter", DocumentSplitter(split_by="sentence", split_length=5))
+    indexing.add_component("embedder", OllamaDocumentEmbedder(model="nomic-embed-text"))
+    indexing.add_component("writer", DocumentWriter(document_store=document_store))
+
+    indexing.connect("converter", "splitter")
+    indexing.connect("splitter", "embedder")
+    indexing.connect("embedder", "writer")
+
+    indexing.run({"converter": {"sources": ["data/my_file.txt"]}})
+
+Step 2: RAG Query Pipeline Example:
+    from haystack.components.builders import PromptBuilder
+    from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
+    from haystack_integrations.components.embedders.ollama import OllamaTextEmbedder
+    from haystack_integrations.components.generators.ollama import OllamaGenerator
+
+    template = """
+    Given the following context, answer the question.
+
+    Context:
+    {% for doc in documents %}
+        {{ doc.content }}
+    {% endfor %}
+
+    Question: {{ question }}
+    Answer:
+    """
+
+    rag = Pipeline()
+    rag.add_component("embedder", OllamaTextEmbedder(model="nomic-embed-text"))
+    rag.add_component("retriever", InMemoryEmbeddingRetriever(document_store=document_store))
+    rag.add_component("prompt", PromptBuilder(template=template))
+    rag.add_component("llm", OllamaGenerator(model="llama3"))
+
+    rag.connect("embedder.embedding", "retriever.query_embedding")
+    rag.connect("retriever.documents", "prompt.documents")
+    rag.connect("prompt.prompt", "llm.prompt")
+
+    result = rag.run({
+        "embedder": {"text": "What is Haystack?"},
+        "prompt": {"question": "What is Haystack?"}
+    })
+
+    print(result["llm"]["replies"][0])
+
+DocumentSplitter Split Strategies:
+    - split_by="word"      : Split every N words
+    - split_by="sentence"  : Split every N sentences
+    - split_by="passage"   : Split on blank lines / paragraphs
+    - split_length         : Number of units per chunk
+    - split_overlap        : Overlap between consecutive chunks (for context continuity)

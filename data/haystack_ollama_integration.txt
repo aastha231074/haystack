@@ -1,0 +1,79 @@
+Haystack + Ollama Integration
+==============================
+
+Ollama allows you to run large language models and embedding models locally on your
+machine. Haystack provides first-class integration with Ollama via the
+`haystack-integrations` package.
+
+Installation:
+    pip install ollama-haystack
+
+Pull a model in Ollama (run in terminal):
+    ollama pull nomic-embed-text    # embedding model
+    ollama pull llama3              # chat/generation model
+    ollama pull mistral             # another generation model
+
+Available Ollama Components in Haystack:
+-----------------------------------------
+
+1. OllamaTextEmbedder
+   Embeds a single query string into a dense vector.
+
+   from haystack_integrations.components.embedders.ollama import OllamaTextEmbedder
+
+   embedder = OllamaTextEmbedder(model="nomic-embed-text")
+   result = embedder.run(text="What is Haystack?")
+   print(result["embedding"])   # list of floats
+
+2. OllamaDocumentEmbedder
+   Embeds a list of Document objects (used in indexing pipelines).
+
+   from haystack_integrations.components.embedders.ollama import OllamaDocumentEmbedder
+
+   embedder = OllamaDocumentEmbedder(model="nomic-embed-text")
+   result = embedder.run(documents=[Document(content="Hello world")])
+   print(result["documents"][0].embedding)  # each doc now has an embedding
+
+3. OllamaGenerator
+   Generates text completions from a prompt string.
+
+   from haystack_integrations.components.generators.ollama import OllamaGenerator
+
+   generator = OllamaGenerator(model="llama3")
+   result = generator.run(prompt="Explain Haystack in 3 sentences.")
+   print(result["replies"][0])
+
+4. OllamaChatGenerator
+   Supports multi-turn chat with message history.
+
+   from haystack_integrations.components.generators.ollama import OllamaChatGenerator
+   from haystack.dataclasses import ChatMessage
+
+   chat = OllamaChatGenerator(model="llama3")
+   messages = [ChatMessage.from_user("What is RAG?")]
+   result = chat.run(messages=messages)
+   print(result["replies"][0].content)
+
+Configuration Options:
+    - model         : Name of the Ollama model (must be pulled locally)
+    - url           : Ollama server URL (default: http://localhost:11434)
+    - generation_kwargs : Dict of generation params (temperature, top_p, num_predict, etc.)
+    - timeout       : Request timeout in seconds
+
+Example with custom settings:
+    OllamaGenerator(
+        model="mistral",
+        url="http://localhost:11434",
+        generation_kwargs={"temperature": 0.7, "num_predict": 512}
+    )
+
+Recommended Embedding Models for Ollama:
+    - nomic-embed-text   : 768-dimensional, fast and accurate (most popular)
+    - mxbai-embed-large  : 1024-dimensional, higher quality
+    - all-minilm         : Lightweight, 384-dimensional
+
+Recommended Generation Models for Ollama:
+    - llama3             : Meta's Llama 3 (8B or 70B)
+    - mistral            : Mistral 7B
+    - phi3               : Microsoft Phi-3 (lightweight)
+    - gemma              : Google Gemma

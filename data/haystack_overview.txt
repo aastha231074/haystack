@@ -1,0 +1,31 @@
+Haystack Overview
+=================
+
+Haystack is an open-source AI framework developed by deepset for building production-ready
+AI applications and pipelines in Python. It is designed to help developers quickly build
+systems like Retrieval-Augmented Generation (RAG), question answering, semantic search,
+conversational AI, and document processing pipelines.
+
+Haystack is model-agnostic and integrates with a wide range of LLMs, embedding models,
+and vector databases. It supports providers such as OpenAI, Cohere, Hugging Face,
+Anthropic, Mistral, and local models via Ollama.
+
+Key Features:
+- Modular pipeline architecture using composable components
+- Support for multiple document stores (in-memory, Elasticsearch, Weaviate, Qdrant, etc.)
+- Built-in support for RAG, summarization, and agent-based workflows
+- Serialization of pipelines to YAML for reproducibility
+- Easy integration with cloud and local LLMs
+- First-class support for streaming responses
+- Extensible with custom components
+
+Haystack 2.x (the current major version) was rebuilt from scratch with a cleaner,
+more Pythonic API. It uses a dataflow-oriented pipeline model where components
+communicate via typed inputs and outputs.
+
+Installation:
+    pip install haystack-ai
+
+Website: https://haystack.deepset.ai
+GitHub:  https://github.com/deepset-ai/haystack
+Docs:    https://docs.haystack.deepset.ai

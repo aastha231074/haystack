@@ -1,0 +1,69 @@
+Haystack Components
+===================
+
+A Component is the fundamental building block of a Haystack pipeline. Each component
+performs a single, well-defined task. Components expose typed input and output sockets
+that the pipeline uses to route data between them.
+
+Creating a Custom Component:
+    from haystack import component
+
+    @component
+    class MyComponent:
+        @component.output_types(result=str)
+        def run(self, text: str) -> dict:
+            return {"result": text.upper()}
+
+Built-in Component Categories:
+--------------------------------
+
+1. CONVERTERS
+   - TextFileToDocument   : Reads .txt files and converts them to Document objects
+   - PyPDFToDocument      : Converts PDF files to Documents
+   - HTMLToDocument       : Parses HTML content into Documents
+   - MarkdownToDocument   : Converts Markdown files to Documents
+   - JSONConverter        : Converts JSON data to Documents
+
+2. PREPROCESSORS
+   - DocumentSplitter     : Splits documents into smaller chunks by word, sentence, or passage
+   - DocumentCleaner      : Removes whitespace, headers, footers, and noise from documents
+
+3. EMBEDDERS
+   - SentenceTransformersDocumentEmbedder : Embeds documents using Sentence Transformers
+   - SentenceTransformersTextEmbedder     : Embeds a query string
+   - OpenAIDocumentEmbedder               : Embeds documents via OpenAI API
+   - OpenAITextEmbedder                   : Embeds query text via OpenAI API
+   - OllamaDocumentEmbedder               : Embeds documents using a local Ollama model
+   - OllamaTextEmbedder                   : Embeds query text using a local Ollama model
+
+4. RETRIEVERS
+   - InMemoryBM25Retriever         : Keyword-based BM25 retrieval from in-memory store
+   - InMemoryEmbeddingRetriever    : Dense vector retrieval from in-memory store
+   - ElasticsearchRetriever        : Retrieves from Elasticsearch
+   - QdrantRetriever               : Retrieves from Qdrant vector database
+   - WeaviateRetriever             : Retrieves from Weaviate
+
+5. GENERATORS (LLMs)
+   - OpenAIGenerator               : Text generation with OpenAI models (GPT-4, etc.)
+   - OllamaGenerator               : Text generation with local Ollama models
+   - HuggingFaceLocalGenerator     : Generation with local Hugging Face models
+   - AnthropicGenerator            : Generation using Anthropic Claude models
+   - CohereGenerator               : Generation using Cohere models
+
+6. CHAT GENERATORS
+   - OpenAIChatGenerator           : Chat-style generation with OpenAI
+   - OllamaChatGenerator           : Chat-style generation with Ollama
+   - AnthropicChatGenerator        : Chat with Anthropic Claude
+
+7. WRITERS
+   - DocumentWriter                : Writes Document objects into a document store
+
+8. ROUTERS & UTILITIES
+   - MetadataRouter                : Routes documents based on metadata conditions
+   - FileTypeRouter                : Routes files by MIME type or extension
+   - BranchJoiner                  : Merges multiple branches into one
+   - PromptBuilder                 : Builds prompts from Jinja2 templates
+
+Component Lifecycle:
+    - warm_up()  : Called once before the pipeline runs (load models, open connections)
+    - run()      : Called on every pipeline invocation

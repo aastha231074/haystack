@@ -1,0 +1,66 @@
+Haystack Document Stores
+========================
+
+A Document Store is a backend that stores Document objects along with their content,
+metadata, and embedding vectors. Haystack supports multiple document store backends.
+
+The Document Dataclass:
+    from haystack.dataclasses import Document
+
+    doc = Document(
+        content="This is the text content of the document.",
+        meta={"source": "file.txt", "author": "Alice"},
+        embedding=[0.1, 0.2, ...]   # populated by an embedder
+    )
+
+    Fields:
+        - id         : Auto-generated unique identifier (UUID)
+        - content    : The text content (str)
+        - blob       : Binary content (for images, audio, etc.)
+        - meta       : Dictionary of arbitrary metadata
+        - embedding  : List of floats representing the dense vector
+
+Available Document Stores:
+----------------------------
+
+1. InMemoryDocumentStore
+   - Stores documents in RAM; no setup required
+   - Great for prototyping and testing
+   - Supports both BM25 (keyword) and embedding (semantic) retrieval
+
+   from haystack.document_stores.in_memory import InMemoryDocumentStore
+   store = InMemoryDocumentStore()
+
+2. ElasticsearchDocumentStore
+   - Production-grade; supports keyword and dense vector search
+   - pip install haystack-ai elasticsearch-haystack
+
+3. OpenSearchDocumentStore
+   - AWS-hosted or self-hosted OpenSearch
+   - pip install opensearch-haystack
+
+4. QdrantDocumentStore
+   - High-performance vector database
+   - pip install qdrant-haystack
+
+5. WeaviateDocumentStore
+   - Graph-based vector store with rich filtering
+   - pip install weaviate-haystack
+
+6. PineconeDocumentStore
+   - Fully-managed cloud vector database
+   - pip install pinecone-haystack
+
+7. ChromaDocumentStore
+   - Lightweight local vector store
+   - pip install chroma-haystack
+
+8. AstraDBDocumentStore
+   - DataStax Astra DB (Cassandra-based)
+   - pip install astra-haystack
+
+Common Document Store Operations:
+    store.write_documents([doc1, doc2])
+    results = store.filter_documents(filters={"field": "author", "operator": "==", "value": "Alice"})
+    store.delete_documents(document_ids=["abc123"])
+    count = store.count_documents()

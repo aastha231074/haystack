@@ -1,0 +1,60 @@
+Haystack Pipelines
+==================
+
+A Pipeline in Haystack is a directed acyclic graph (DAG) of components connected by
+their input/output sockets. Data flows through the graph from one component to the next.
+
+Creating and Running a Pipeline:
+    from haystack import Pipeline
+
+    pipeline = Pipeline()
+    pipeline.add_component("comp_a", ComponentA())
+    pipeline.add_component("comp_b", ComponentB())
+    pipeline.connect("comp_a.output_field", "comp_b.input_field")
+
+    result = pipeline.run({"comp_a": {"input_data": "hello"}})
+
+Key Pipeline Methods:
+    - add_component(name, instance)         : Register a component with a name
+    - connect(sender, receiver)             : Connect an output socket to an input socket
+    - run(input_dict)                       : Execute the pipeline
+    - draw(path)                            : Save a visual diagram of the pipeline as PNG
+    - to_dict() / from_dict()              : Serialize/deserialize pipeline to dictionary
+    - dumps() / loads()                    : Serialize/deserialize pipeline to YAML string
+    - save() / load()                      : Save/load pipeline to/from a YAML file
+
+Common Pipeline Patterns:
+--------------------------
+
+1. INDEXING PIPELINE
+   Used to ingest, process, embed, and store documents.
+
+   TextFileToDocument → DocumentSplitter → DocumentEmbedder → DocumentWriter
+
+2. RAG (Retrieval-Augmented Generation) PIPELINE
+   Used to answer questions by retrieving relevant context and generating a response.
+
+   TextEmbedder → EmbeddingRetriever → PromptBuilder → Generator
+
+3. KEYWORD SEARCH PIPELINE
+   Uses BM25 for lexical search without embeddings.
+
+   BM25Retriever → PromptBuilder → Generator
+
+4. HYBRID SEARCH PIPELINE
+   Combines keyword and semantic search for better recall.
+
+   TextEmbedder + BM25Retriever → DocumentJoiner → Ranker → PromptBuilder → Generator
+
+Pipeline Serialization (YAML):
+    pipeline.save("my_pipeline.yaml")
+    loaded = Pipeline.load("my_pipeline.yaml")
+
+Async Pipelines:
+    Haystack also supports async execution via:
+    await pipeline.run_async(inputs)
+
+Conditional Pipelines:
+    Pipelines can have branches that are activated conditionally using
+    Routers (e.g., MetadataRouter, FileTypeRouter) to direct different
+    document types or metadata conditions to different sub-graphs.
